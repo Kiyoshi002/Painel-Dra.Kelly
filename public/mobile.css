@@ -1,0 +1,54 @@
+/* mobile.css — carregue DEPOIS do style.css, implantes.css e guia.css */
+
+/* links de Privacidade / Termos no fim do menu lateral */
+.legal-links { padding: 10px 12px 0; font-size: 10.5px; font-weight: 600; text-align: center; color: var(--ink-lighter); }
+.legal-links a { color: var(--ink-lighter); text-decoration: none; }
+.legal-links a:hover { color: var(--accent-dark); text-decoration: underline; }
+
+/* ===== CELULAR ===== */
+@media (max-width: 700px) {
+  html, body { height: 100dvh; }
+  .app { flex-direction: column; height: 100dvh; width: 100%; padding: 8px; gap: 8px; }
+
+  /* menu vira barra de ícones embaixo */
+  .sidebar { order: 2; width: 100%; flex-direction: row; align-items: center; gap: 2px; padding: 6px 8px; border-radius: 22px; overflow-x: auto; overflow-y: hidden; }
+  .sidebar .sidebar-brand, .sidebar .perfil-sidebar, .sidebar .nav-label, .sidebar .legal-links { display: none; }
+  .sidebar .nav-stack, .sidebar .nav-bottom { display: flex; flex-direction: row; gap: 2px; margin: 0; padding: 0; border: 0; }
+  .sidebar .nav-btn { width: 46px; height: 44px; padding: 0; justify-content: center; flex-shrink: 0; }
+  .sidebar .nav-btn span { display: none; }
+  .nav-btn.active::before { left: 50%; top: 0; transform: translateX(-50%); width: 18px; height: 3px; border-radius: 0 0 4px 4px; }
+
+  .main { order: 1; padding: 0 2px 8px; }
+  .topbar { margin-bottom: 14px; padding: 0 4px; gap: 10px; }
+  .greeting h1 { font-size: 19px; }
+  .icon-btn { width: 38px; height: 38px; }
+
+  .card, .stat-card { padding: 16px; border-radius: 20px; }
+  .card-head { flex-wrap: wrap; gap: 10px; }
+  .hero-image-card { height: 190px; border-radius: 22px; }
+  .hero-image-content h2 { font-size: 20px; }
+  .stat-value { font-size: 26px; }
+  .mes-bar { padding: 14px 16px; }
+
+  /* tudo em uma coluna */
+  .dash-grid, .layout-guias, .msg-layout, .pix-layout, .config-grid, .imprimir-grid, .implante-form { grid-template-columns: 1fr; }
+  .implante-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .espera-form.open { grid-template-columns: 1fr; }
+  .espera-table-head { display: none; }
+  .espera-row { grid-template-columns: 1fr; gap: 4px; }
+  .msg-send-panel .row { grid-template-columns: 1fr; }
+
+  /* 16px evita o zoom automático do iPhone ao tocar num campo */
+  input[type="text"], input[type="date"], input[type="number"], input[type="tel"], select, textarea { font-size: 16px; }
+  .btn, .btn-outline { min-height: 44px; }
+
+  .modal-overlay { padding: 10px; }
+  .modal-box { padding: 20px; border-radius: 24px; }
+  .modal-actions { flex-wrap: wrap; }
+
+  /* aba Imprimir guia: tabela rola de lado e a folha é reduzida para caber */
+  #view-imprimir .card { overflow-x: auto; }
+  #view-imprimir table { min-width: 560px; }
+  #folha-impressao { padding: 8px 0; }
+  #folha-impressao .gp { zoom: .42; }
+}

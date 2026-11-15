@@ -1,0 +1,109 @@
+/* ===== GERAL ===== */
+* { box-sizing: border-box; }
+body { margin: 0; background: #dcdcdc; font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+
+.toolbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 8px; justify-content: center; padding: 8px; background: #333; }
+.toolbar button { font: 600 13px Arial; padding: 7px 14px; border: 0; border-radius: 4px; cursor: pointer; background: #fff; }
+.toolbar button:hover { background: #ddd; }
+
+.page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 12mm 10mm 7mm; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,.2); }
+
+input { font: inherit; color: inherit; border: 0; background: transparent; outline: 0; width: 100%; padding: 0; }
+input:focus { background: #fff8d6; }
+.lbl { font-size: 3.5mm; color: #222; }
+
+/* ===== CABEÇALHO ===== */
+.cabecalho-topo { display: flex; align-items: flex-end; justify-content: space-between; gap: 6mm; }
+.logo-bacen { display: flex; align-items: center; gap: 2mm; flex-shrink: 0; }
+.logo-bacen img { height: 15mm; width: auto; display: block; }
+
+/* 🟢 TAMANHO DO "BANCO CENTRAL DO BRASIL" */
+.logo-texto { font-size: 5.2mm; font-weight: 800; letter-spacing: -.2mm; white-space: nowrap; color: #000; }
+
+.campo-local { flex: 1; max-width: 55mm; height: 9mm; border-left: 1px solid #222; border-bottom: 1px solid #222; padding: 0 1mm; }
+.campo-data { width: 45mm; }
+.campo-data .comb { height: 5mm; margin-top: 0; }
+
+.title {
+  text-align: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 6.4mm;
+  letter-spacing: -0.2mm;
+  margin: 3mm 0 2mm;
+  color: #000;
+}
+
+/* ===== LINHAS DE CAMPOS ===== */
+.row { display: flex; }
+.row.thick { border-top: 2px solid #222; }
+.row.line { border-bottom: 1px solid #222; }
+.row.gap { margin-top: 1.5mm; }
+.cell { display: flex; flex-direction: column; padding: .8mm 1.5mm 0; min-height: 11mm; border-left: 1px solid #222; }
+.cell.nb { border-left: 0; }
+.cell.b { border-bottom: 1px solid #222; }
+.cell input { height: 6mm; font-size: 3.8mm; }
+.cell .comb { margin-top: auto; }
+.grow { flex: 1; }
+
+/* quadradinhos (um caractere por caixa) */
+.comb { display: flex; border: 1px solid #222; border-top: 0; height: 7mm; margin-top: 1.5mm; }
+.comb input { flex: 1 1 0; min-width: 0; align-self: flex-end; height: 80%; text-align: center; font-size: 3.8mm; border-left: 1px solid #222; }
+.comb input:first-child { border-left: 0; }
+
+/* ===== ODONTOGRAMA ===== */
+.odonto { margin-top: 2mm; padding-top: 1.5mm; }
+.odonto h4 { margin: 0; text-align: center; font-weight: 400; font-size: 3.7mm; }
+.arc { display: flex; justify-content: space-between; }
+.arc.prov { padding: 0 22mm; }
+.arc.perm { padding: 0 6mm; }
+.grp { display: flex; flex-direction: column; gap: .6mm; position: relative; margin-top: 1mm; }
+.nums, .teeth { display: flex; }
+.nums span { font-size: 2.6mm; color: #333; text-align: center; }
+.teeth + .teeth { margin-top: 1.2mm; }
+.side { position: absolute; top: 50%; transform: translateY(-50%); font-size: 2.8mm; }
+.tooth { display: block; cursor: pointer; }
+.tooth rect.fill { fill: #fff; }
+.tooth.on rect.fill { fill: #9a9a9a; }
+.prov .tooth, .prov .nums span { width: 8.3mm; }
+.prov .tooth { height: 8.3mm; }
+.perm .tooth, .perm .nums span { width: 7.4mm; }
+.perm .tooth { height: 7.4mm; }
+.perm-title { margin-top: 1mm !important; }
+
+/* ===== TABELA ===== */
+.tb { margin-top: 2mm; border-top: 2px solid #222; }
+.tr { display: grid; grid-template-columns: 17mm 1fr 32mm 32mm 36mm; border-bottom: 1px solid #222; }
+.tr > * { border-left: 1px solid #222; padding: 0 1.5mm; }
+.tr > *:first-child { border-left: 0; }
+.tr.h { font-size: 3.7mm; height: 7mm; align-items: center; }
+.tr:not(.h) { height: 7.5mm; }
+.tr input { height: 100%; font-size: 3.7mm; }
+
+/* ===== TOTAL ===== */
+.total { display: flex; justify-content: flex-end; align-items: center; border-bottom: 2px solid #222; height: 10mm; }
+.total svg { margin-right: 1.5mm; }
+.total .t { width: 36mm; border-left: 1px solid #222; height: 100%; padding: 1mm 1.5mm; font-size: 3.7mm; }
+.total .t input { height: 5mm; }
+
+/* ===== RODAPÉ ===== */
+.foot { display: grid; grid-template-columns: 1fr 1fr; min-height: 25mm; }
+.foot .l { padding: 1.5mm 2mm; position: relative; }
+.foot .l p { margin: 0 0 1.5mm; letter-spacing: .35mm; font-size: 3.9mm; }
+.chk { display: flex; align-items: center; gap: 2mm; margin: 2.5mm 0; font-size: 3.9mm; }
+.chk i { width: 5mm; height: 5mm; border: 1px solid #222; display: inline-block; cursor: pointer; position: relative; }
+.chk i.on::after { content: "✕"; position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: 3.6mm; }
+.sigb { position: absolute; left: 30mm; right: 0; bottom: 2mm; border-top: 1px solid #222; text-align: center; font-size: 3.9mm; padding-top: .5mm; }
+.foot .r { border-left: 1px solid #222; padding: 1.5mm 2mm; font-size: 3.9mm; }
+.legal { display: flex; justify-content: space-between; font-size: 3.5mm; margin-top: .5mm; border-top: 1px solid #222; padding-top: .5mm; }
+.legal small { font-size: 2.8mm; }
+
+/* ===== IMPRESSÃO ===== */
+@page { size: A4; margin: 0; }
+@media print {
+  body { background: #fff; margin: 0; }
+  .toolbar { display: none !important; }
+  .page { margin: 0; box-shadow: none; }
+  input:focus { background: transparent; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

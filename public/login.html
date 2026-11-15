@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Entrar — Kelly Machado</title>
+    
+    <!-- Favicon and Fonts -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Importing the main stylesheet to inherit global variables (colors, fonts, etc.) -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Supabase SDK for authentication -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    
+    <!-- Theme Initializer: Applies dark mode before the page renders to avoid flashing -->
+    <script>
+        try {
+            if (localStorage.getItem('tema-painel') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    </script>
+
+    <style>
+        /* 
+         * 1. LAYOUT & CONTAINER
+         * The main wrapper is a CSS Grid that splits the screen into two columns: 
+         * the brand image on the left and the login form on the right.
+         */
+        body {
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            overflow: hidden; /* Prevents scrolling on the login screen */
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            max-width: 950px;
+            min-height: 600px;
+            background-color: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 24px 48px -20px rgba(74, 63, 75, 0.25);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Responsive: Stacks vertically on mobile and hides the image panel */
+        @media (max-width: 768px) {
+            .login-container { grid-template-columns: 1fr; max-width: 400px; min-height: auto; }
+            .brand-panel { display: none; }
+        }
+
+        /* 
+         * 2. LEFT PANEL (BRAND IMAGE)
+         * Displays the logo image as a full background cover. 
+         * A dark gradient overlay is applied via ::before to ensure the text is readable.
+         */
+        .brand-panel {
+            background-color: #2A1B24;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 40px;
+            overflow: hidden;
+            background-image: url('/logo-kelly.jpg'); /* Image path relative to the public folder */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(42, 27, 36, 0.2) 0%, rgba(42, 27, 36, 0.8) 100%);
+            z-index: 1;
+        }
+
+        .brand-text-wrapper {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+        }
+
+        .brand-name {
+            color: #FFFFFF;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .brand-sub {
+            color: #E8DCE1;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+        }
+
+        /* 
+         * 3. RIGHT PANEL (LOGIN FORM)
+         * Contains the form fields. Uses flexbox to center everything vertically.
+         */
+        .form-panel {
+            padding: 50px 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header { text-align: center; margin-bottom: 32px; }
+        .form-header h1 { font-size: 24px; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 6px; }
+        .form-header p { font-size: 13px; color: var(--ink-soft); }
+
+        /* 
+         * 4. FORM ELEMENTS
+         * Custom styled inputs and buttons for a premium look.
+         */
+        .form-group { margin-bottom: 20px; }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid var(--border-strong);
+            border-radius: 100px;
+            background-color: var(--surface-soft);
+            color: var(--ink);
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 0;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: var(--surface);
+            box-shadow: 0 0 0 3px rgba(176, 136, 148, 0.18);
+        }
+
+        .error-msg {
+            min-height: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        .btn-submit { margin-top: 10px; padding: 15px; }
+
+        .form-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--ink-soft);
+        }
+        .form-footer a { color: var(--accent-dark); font-weight: 600; text-decoration: none; }
+        .form-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Main semantic container -->
+    <main class="login-container">
+        
+        <!-- Left side: Brand image and text -->
+        <section class="brand-panel">
+            <div class="brand-text-wrapper">
+                <div class="brand-name">Kelly Machado</div>
+                <div class="brand-sub">Periodontia e Implantodontia</div>
+            </div>
+        </section>
+
+        <!-- Right side: Login form -->
+        <section class="form-panel">
+            <header class="form-header">
+                <h1>Bem-vinda de volta</h1>
+                <p>Acesse o painel da clínica</p>
+            </header>
+
+            <form id="form">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input id="email" type="email" autocomplete="username" required autofocus placeholder="seu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input id="senha" type="password" autocomplete="current-password" required placeholder="••••••••">
+                </div>
+
+                <!-- Div to display authentication errors -->
+                <div class="error-msg" id="erro" role="alert"></div>
+                
+                <button id="btn" type="submit" class="btn btn-submit">Entrar</button>
+            </form>
+
+            <footer class="form-footer">
+                <a href="privacidade.html">Política de Privacidade</a> &middot; 
+                <a href="termos.html">Termos de Uso</a>
+            </footer>
+        </section>
+    </main>
+
+    <script src="cookies.js"></script>
+    
+    <script>
+        /* 
+         * 1. INITIALIZATION
+         * Creates the Supabase client instance using the keys from supabase-config.js.
+         * Selects the DOM elements we need to interact with.
+         */
+        const supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+        
+        const loginForm = document.getElementById('form');
+        const errorDisplay = document.getElementById('erro');
+        const submitButton = document.getElementById('btn');
+
+        /* 
+         * 2. SESSION CHECK
+         * Checks if a user is already logged in. If a valid session exists, 
+         * it immediately redirects them to the dashboard, skipping the login screen.
+         */
+        supabaseClient.auth.getSession().then(({ data }) => { 
+            if (data.session) {
+                window.location.href = '/'; 
+            }
+        });
+
+        /* 
+         * 3. LOGIN HANDLER
+         * Intercepts the form submission, prevents the default page reload,
+         * and sends the credentials to Supabase.
+         */
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Stop the form from reloading the page
+            
+            // Reset UI state
+            errorDisplay.textContent = ''; 
+            submitButton.disabled = true; 
+            submitButton.textContent = 'Entrando...';
+
+            // Authenticate with Supabase
+            const { error } = await supabaseClient.auth.signInWithPassword({ 
+                email: loginForm.email.value.trim(), 
+                password: loginForm.senha.value 
+            });
+
+            // Handle authentication errors
+            if (error) {
+                // Check if the error is due to invalid credentials
+                if (/invalid login/i.test(error.message)) {
+                    errorDisplay.textContent = 'E-mail ou senha incorretos.';
+                } else {
+                    errorDisplay.textContent = 'Não foi possível entrar. Tente de novo.';
+                }
+                
+                // Reset UI state to allow another attempt
+                submitButton.disabled = false; 
+                submitButton.textContent = 'Entrar';
+                loginForm.senha.value = ''; 
+                loginForm.senha.focus();
+                return;
+            }
+            
+            // If successful, redirect to the main dashboard
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

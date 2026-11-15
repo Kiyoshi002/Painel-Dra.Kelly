@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PASBC – Guia/Orçamento Odontológico</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+  <div class="toolbar">
+    <button onclick="window.print()">Imprimir</button>
+    <button onclick="limpar()">Limpar formulário</button>
+  </div>
+
+  <main class="page">
+
+    <!-- CABEÇALHO -->
+    <div class="cabecalho-topo">
+      <div class="logo-bacen">
+        <img src="data:image/png;base64,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" alt="Logo Bacen">
+        <div class="logo-texto">BANCO CENTRAL DO BRASIL</div>
+      </div>
+      <div class="campo-local"><span class="lbl">Local</span><input aria-label="Local"></div>
+      <div class="campo-data"><span class="lbl">Data</span><div class="comb" data-n="8" data-sep="2,4" data-full="1"></div></div>
+    </div>
+
+    <div class="title">PASBC – Guia/Orçamento Odontológico</div>
+
+    <!-- DADOS -->
+    <div class="row thick">
+      <div class="cell nb grow b"><span class="lbl">Beneficiário</span><input></div>
+      <div class="cell nb" style="width:50mm"><span class="lbl">Data de nascimento</span><div class="comb" data-n="8" data-sep="2,4" data-full="1"></div></div>
+    </div>
+    <div class="row">
+      <div class="cell nb"><span class="lbl">Matrícula PASBC</span><div class="comb" data-n="8"></div></div>
+      <div class="cell nb"><span class="lbl">Nº de ordem</span><div class="comb" data-n="2"></div></div>
+      <div class="cell grow b"><span class="lbl">Endereço</span><input></div>
+    </div>
+    <div class="row line">
+      <div class="cell nb grow" style="min-height:9mm"><span class="lbl">Titular</span><input></div>
+      <div class="cell" style="width:92mm;min-height:9mm"><span class="lbl">Telefone do benef ciário</span><input></div>
+    </div>
+    <div class="row line gap">
+      <div class="cell nb grow"><span class="lbl">Dentista e CPF/CGC</span><input></div>
+      <div class="cell" style="width:30mm"><span class="lbl">CRO</span><input></div>
+      <div class="cell" style="width:36mm"><span class="lbl">Telefone</span><input></div>
+      <div class="cell" style="width:56mm"><span class="lbl">Tratamento (prev. dias)</span><input></div>
+    </div>
+
+    <!-- ODONTOGRAMA (gerado pelo script) -->
+    <div class="odonto">
+      <h4>Dentição provisória</h4>
+      <div class="arc prov" id="prov"></div>
+      <h4 class="perm-title">Dentição permanente</h4>
+      <div class="arc perm" id="perm"></div>
+    </div>
+
+    <!-- TABELA (linhas geradas pelo script) -->
+    <div class="tb" id="tb">
+      <div class="tr h"><span>Qte.</span><span>Procedimentos</span><span>Código</span><span>Dente/Região</span><span>R$</span></div>
+    </div>
+
+    <div class="total">
+      <svg width="52" height="46" viewBox="0 0 52 46" aria-hidden="true"><path d="M2 2l48 21L2 44z" fill="#d9d9d9" stroke="#333" stroke-width="1.5"/></svg>
+      <div class="t"><span class="lbl">Total</span><input aria-label="Total"></div>
+    </div>
+
+    <!-- ASSINATURAS -->
+    <div class="foot">
+      <div class="l">
+        <p>Tratamento realizado em uma única</p>
+        <div class="chk"><span>Sim</span><i onclick="this.classList.toggle('on')"></i></div>
+        <div class="chk"><span>Não</span><i onclick="this.classList.toggle('on')"></i></div>
+        <div class="sigb">Assinatura do beneficiário</div>
+      </div>
+      <div class="r">Assinatura do prestador</div>
+    </div>
+    <div class="legal"><span>2ª via – Prestador de serviços</span><small>018056-4</small></div>
+
+  </main>
+
+  <script>
+    // Dente: quadrado + quadrado interno + diagonais (clique para marcar)
+    const tooth = `<svg class="tooth" viewBox="0 0 20 20" onclick="this.classList.toggle('on')">
+      <rect class="fill" x=".5" y=".5" width="19" height="19" fill="none" stroke="#555"/>
+      <rect x="5.5" y="5.5" width="9" height="9" fill="none" stroke="#555"/>
+      <path d="M.5 .5L5.5 5.5M19.5 .5L14.5 5.5M.5 19.5L5.5 14.5M19.5 19.5L14.5 14.5" stroke="#555"/></svg>`;
+
+    function grupo(nums, lado) {
+      const n = `<div class="nums">${nums.map(x => `<span>${x}</span>`).join('')}</div>`;
+      const t = `<div class="teeth">${nums.map(() => tooth).join('')}</div>`;
+      return `<div class="grp">${n}${t}${t}${n}<span class="side" style="${lado === 'D' ? 'left:-4mm' : 'right:-4mm'}">${lado}</span></div>`;
+    }
+    const prov = [5,4,3,2,1], perm = [8,7,6,5,4,3,2,1];
+    document.getElementById('prov').innerHTML = grupo(prov, 'D') + grupo([...prov].reverse(), 'E');
+    document.getElementById('perm').innerHTML = grupo(perm, 'D') + grupo([...perm].reverse(), 'E');
+
+    // Campos de um caractere por caixa
+    document.querySelectorAll('.comb').forEach(c => {
+      const n = +c.dataset.n, seps = (c.dataset.sep || '').split(',').map(Number), full = c.dataset.full;
+      c.style.width = full ? '100%' : (n * 5.2) + 'mm';
+      c.innerHTML = Array.from({length: n}, (_, i) =>
+        `<input maxlength="1" ${seps.includes(i) ? 'style="box-shadow: inset 1px 0 0 #222"' : ''} oninput="if(this.value&&this.nextElementSibling)this.nextElementSibling.focus()">`).join('');
+    });
+
+    // 20 linhas de procedimentos
+    const tb = document.getElementById('tb');
+    for (let i = 0; i < 20; i++)
+      tb.insertAdjacentHTML('beforeend', '<div class="tr"><input><input><input><input><input></div>');
+
+    function limpar() {
+      if (!confirm('Limpar todos os campos?')) return;
+      document.querySelectorAll('input').forEach(i => i.value = '');
+      document.querySelectorAll('.on').forEach(e => e.classList.remove('on'));
+    }
+  </script>
+</body>
+</html>

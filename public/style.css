@@ -1,0 +1,434 @@
+/* =====================================================================
+   style.css — main stylesheet of the Kelly Machado panel
+
+   CONTENTS
+    1. Design tokens (colors, radii, shadows) for light and dark themes
+    2. Base / reset
+    3. App shell: sidebar and main area
+    4. Top bar
+    5. Shared components: cards, buttons, forms, badges, lists, modals, accordions
+    6. Screens: dashboard, guides, waiting list, implants, Pix, messages, settings
+    7. Pix plaque and its modal
+    8. Dark-theme overrides
+    9. Accessibility: keyboard focus, reduced motion
+   10. Printing (only the Pix plaque is printed from this page)
+
+   Load order in index.html: style.css -> implantes.css -> guia.css -> mobile.css
+   (later files win, so phone rules live in mobile.css).
+   The printable PASBC sheet is styled in guia.css, not here.
+   ===================================================================== */
+
+
+/* ============ 1. DESIGN TOKENS ============
+   Every color/size below is a CSS variable, so the whole look can be changed in one place.
+   The "dark" class is added to <html> by toggleTema() in app.js. */
+:root{
+  color-scheme: light;                       /* native controls (date picker, scrollbars) use light colors */
+  --accent: #B08894; --accent-dark: #8E6A78; --accent-soft: #E8DCE1;
+  --bg-page: #EDE4EA; --surface: #FFFFFF; --surface-soft: #FAF6F8;
+  --surface-muted: #F5EEF1; --surface-highlight: #EBE0E6;
+  --border: rgba(74, 63, 75, 0.06); --border-strong: rgba(74, 63, 75, 0.12);
+  --ink: #3A2E36; --ink-soft: #6B5F66; --ink-lighter: #A0959A;
+  --shadow-sm: 0 2px 8px rgba(74, 63, 75, 0.05); --shadow-md: 0 8px 24px -8px rgba(74, 63, 75, 0.12); --shadow-lg: 0 24px 48px -20px rgba(74, 63, 75, 0.2);
+  --success: #7FA890; --warning: #E8B87C; --danger: #D98686;
+  --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px; --radius-xl: 32px; --radius-pill: 100px;
+
+  /* Shortcuts for things that were repeated many times */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --grad-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);   /* main button / avatar gradient */
+  --shadow-accent: 0 8px 20px -8px rgba(176, 136, 148, 0.5);                           /* colored glow under primary buttons */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);                                                /* smooth hover transitions */
+  --on-accent: #fff;                                                                    /* text color on top of the accent color */
+}
+:root.dark{
+  color-scheme: dark;
+  --accent: #C1A0AC; --accent-dark: #C9A8B4; --accent-soft: #3A2E36;
+  --bg-page: #1A1620; --surface: #262029; --surface-soft: #2C2530;
+  --surface-muted: #322B37; --surface-highlight: #3A3040;
+  --border: rgba(240, 217, 228, 0.06); --border-strong: rgba(240, 217, 228, 0.12);
+  --ink: #F0E6EC; --ink-soft: #C4B2BC; --ink-lighter: #8A7A85;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3); --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.5); --shadow-lg: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+  --success: #8FBBA3; --warning: #E8B87C;
+  --on-accent: #1A1620;
+}
+
+
+/* ============ 2. BASE / RESET ============ */
+*{ box-sizing: border-box; margin: 0; padding: 0; }                 /* predictable sizing, no default margins */
+html, body{ height: 100%; }
+body{ font-family: var(--font); color: var(--ink); background: var(--bg-page); overflow: hidden; -webkit-font-smoothing: antialiased; transition: background .4s ease, color .4s ease; }  /* the page never scrolls; .main does */
+button, input, select, textarea{ font-family: inherit; }            /* form controls use Inter too (browsers don't by default) */
+
+/* Outline icons: every <svg class="ic"> in index.html draws its shapes from the sprite with this look */
+.ic{ fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ic-bold{ stroke-width: 2.5; }
+
+
+/* ============ 3. APP SHELL ============ */
+.app{ display: flex; height: 100vh; height: 100dvh; width: 100%; padding: 18px; gap: 18px; }   /* dvh = real height on phones with moving address bars */
+
+/* ----- Sidebar ----- */
+.sidebar{ width: 240px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; box-shadow: var(--shadow-sm); transition: all .4s ease; overflow-y: auto; }
+/* Tablets: sidebar collapses to icons only (phones get a bottom bar from mobile.css) */
+@media (max-width: 900px){
+  .sidebar{ width: 78px; padding: 20px 0; align-items: center; }
+  .sidebar .sidebar-brand-text, .sidebar .perfil-sidebar-info, .sidebar .nav-label, .sidebar .nav-btn span{ display: none; }
+  .sidebar .nav-btn{ width: 44px; justify-content: center; padding: 0; }
+  .sidebar .perfil-sidebar{ justify-content: center; }
+}
+.sidebar-brand{ display: flex; align-items: center; gap: 10px; padding: 0 8px; margin-bottom: 24px; }
+.sidebar-brand-logo{ width: 30px; height: 30px; border-radius: 10px; background: var(--surface-highlight); display: flex; align-items: center; justify-content: center; color: var(--accent-dark); }
+.sidebar-brand-logo svg{ width: 16px; height: 16px; }
+.sidebar-brand-text{ font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+
+/* Profile card at the top of the sidebar (click = edit profile) */
+.perfil-sidebar{ display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface-muted); border-radius: var(--radius-md); cursor: pointer; transition: all .2s; margin-bottom: 28px; }
+.perfil-sidebar:hover{ background: var(--surface-highlight); transform: translateY(-1px); }
+.perfil-sidebar-avatar{ width: 44px; height: 44px; border-radius: 14px; background: var(--grad-accent); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px; flex-shrink: 0; overflow: hidden; position: relative; }
+.perfil-sidebar-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+.perfil-sidebar-avatar .badge-edit{ position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; background: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: var(--accent-dark); }
+.perfil-sidebar-avatar .badge-edit svg{ width: 9px; height: 9px; }
+.perfil-sidebar-info{ flex: 1; min-width: 0; }                      /* min-width:0 lets the text truncate with "..." instead of overflowing */
+.perfil-sidebar-nome{ font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.perfil-sidebar-cargo{ font-size: 10.5px; color: var(--ink-lighter); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Navigation menu. The .active item gets a highlight and a small accent bar on the left */
+.nav-label{ font-size: 10px; font-weight: 700; color: var(--ink-lighter); text-transform: uppercase; letter-spacing: 0.12em; padding: 0 12px; margin-bottom: 8px; margin-top: 6px; }
+.nav-stack{ display: flex; flex-direction: column; gap: 2px; }
+.nav-btn{ display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; cursor: pointer; color: var(--ink-soft); background: transparent; transition: all .2s var(--ease); font-size: 13px; font-weight: 600; letter-spacing: -0.005em; position: relative; }
+.nav-btn svg{ width: 18px; height: 18px; flex-shrink: 0; opacity: 0.85; }
+.nav-btn:hover{ background: var(--surface-muted); color: var(--ink); }
+.nav-btn.active{ background: var(--surface-highlight); color: var(--accent-dark); }
+.nav-btn.active svg{ opacity: 1; }
+.nav-btn.active::before{ content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: var(--accent); border-radius: 0 4px 4px 0; }
+.nav-bottom{ margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); }   /* pushes "Configurações" to the bottom */
+
+/* ----- Main area: the only part that scrolls ----- */
+.main{ flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 6px 20px 4px; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+.main::-webkit-scrollbar{ width: 6px; }
+.main::-webkit-scrollbar-thumb{ background: var(--border-strong); border-radius: 10px; }
+
+/* Only the .active screen is visible; mudarView() in app.js moves the class */
+.view{ display: none; }
+.view.active{ display: block; }
+
+
+/* ============ 4. TOP BAR ============ */
+.topbar{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 8px; gap: 16px; flex-wrap: wrap; }
+.greeting h1{ font-size: 26px; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 2px; }
+.greeting h1 span{ font-weight: 800; color: var(--ink); }
+.greeting p{ font-size: 12px; color: var(--ink-lighter); font-weight: 500; }
+.top-right{ display: flex; align-items: center; gap: 10px; }
+.icon-btn{ width: 42px; height: 42px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; box-shadow: var(--shadow-sm); flex-shrink: 0; }
+.icon-btn:hover{ color: var(--accent-dark); background: var(--surface-muted); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.icon-btn svg{ width: 16px; height: 16px; }
+
+/* Theme button: sun and moon sit on top of each other; the dark class cross-fades and rotates them */
+#btn-tema{ position: relative; overflow: hidden; }
+#btn-tema .icone-sol, #btn-tema .icone-lua{ position: absolute; transition: all .4s var(--ease); }
+#btn-tema .icone-sol{ opacity: 1; transform: rotate(0deg) scale(1); }
+#btn-tema .icone-lua{ opacity: 0; transform: rotate(-90deg) scale(0.5); }
+:root.dark #btn-tema .icone-sol{ opacity: 0; transform: rotate(90deg) scale(0.5); }
+:root.dark #btn-tema .icone-lua{ opacity: 1; transform: rotate(0deg) scale(1); }
+
+/* Three-dots dropdown (toggleMenu() adds .open) */
+.menu-dropdown{ position: relative; }
+.menu-dropdown-content{ display: none; position: absolute; top: 46px; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); min-width: 180px; padding: 6px; z-index: 100; }
+.menu-dropdown.open .menu-dropdown-content{ display: block; }
+.menu-dropdown-item{ display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-soft); transition: all .15s; }
+.menu-dropdown-item:hover{ background: var(--surface-muted); color: var(--ink); }
+.menu-dropdown-item svg{ width: 15px; height: 15px; }
+
+
+/* ============ 5. SHARED COMPONENTS ============ */
+
+/* ----- Cards ----- */
+.card{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-sm); transition: all .3s var(--ease); margin-bottom: 18px; }
+.card-head{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-title{ font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.card-title svg{ width: 16px; height: 16px; color: var(--accent-dark); }
+.card-link{ font-size: 11.5px; font-weight: 600; color: var(--accent-dark); cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .2s; }
+.card-link:hover{ gap: 7px; }
+.card-link svg{ width: 11px; height: 11px; }
+
+/* ----- Counter cards (dashboard, guides, implants) ----- */
+.stats-row{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+@media (max-width: 800px){ .stats-row{ grid-template-columns: 1fr; } }
+.stat-card{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; transition: all .3s var(--ease); cursor: pointer; }
+.stat-card:hover{ transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+.stat-top{ display: flex; justify-content: space-between; align-items: flex-start; }
+.stat-icon{ width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--surface-muted); color: var(--accent-dark); }
+.stat-icon svg{ width: 17px; height: 17px; }
+.stat-value{ font-size: 32px; font-weight: 800; color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+.stat-label{ font-size: 11.5px; color: var(--ink-soft); font-weight: 600; }
+.stat-trend{ display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: var(--accent-dark); background: rgba(176, 136, 148, 0.15); padding: 3px 8px; border-radius: var(--radius-pill); }
+.stat-trend svg{ width: 9px; height: 9px; }
+
+/* ----- Form fields (every label/input/select/textarea of the app) ----- */
+label{ display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-dark); margin-bottom: 6px; }
+input[type="text"], input[type="date"], input[type="number"], input[type="tel"], input[type="email"], input[type="password"], select, textarea{ width: 100%; padding: 12px 16px; border: 1.5px solid var(--border-strong); border-radius: var(--radius-pill); font-size: 13px; background: var(--surface-soft); color: var(--ink); margin-bottom: 14px; transition: all .2s; }
+textarea{ border-radius: 14px; resize: vertical; }
+input::placeholder, textarea::placeholder{ color: var(--ink-lighter); }
+input:focus, select:focus, textarea:focus{ outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(176, 136, 148, 0.12); }
+select option{ color: var(--ink); }
+
+/* ----- Buttons ----- */
+.btn{ background: var(--grad-accent); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; letter-spacing: -0.005em; box-shadow: var(--shadow-accent); transition: all .2s; }   /* primary button */
+.btn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+.btn:disabled{ opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-icon{ display: inline-flex; align-items: center; justify-content: center; gap: 8px; }   /* button with icon + text */
+.btn-icon svg{ width: 15px; height: 15px; flex-shrink: 0; }
+.btn-outline{ background: var(--surface); border: 1.5px solid var(--accent); color: var(--accent-dark); padding: 9px 16px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }   /* secondary button */
+.btn-outline:hover{ background: var(--accent); color: var(--on-accent); }
+.del-btn{ background: none; border: none; color: var(--danger); font-size: 12px; font-weight: 700; cursor: pointer; }   /* small red "Excluir" text button */
+.obs-btn{ background: none; border: 1.5px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 11px; color: var(--ink-soft); font-weight: 600; transition: all .15s; }
+.obs-btn:hover{ background: var(--accent); color: white; border-color: var(--accent); }
+.obs-btn.tem-obs{ background: rgba(232, 184, 124, 0.2); color: #8A6A2E; border-color: var(--warning); }   /* guide already has a note */
+
+/* ----- Small helpers ----- */
+.empty{ text-align: center; padding: 30px; color: var(--ink-lighter); font-size: 13px; }   /* "nothing here yet" message */
+.tag{ display: inline-block; padding: 4px 10px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+.tag.convenio{ background: rgba(127, 168, 144, 0.15); color: #5D8A72; }
+.tag.particular{ background: rgba(232, 184, 124, 0.18); color: #B88448; }
+.autosave-pill{ font-size: 12px; font-weight: 600; color: var(--ink-soft); background: var(--surface-soft); padding: 8px 16px; border-radius: var(--radius-pill); border: 1px solid var(--border); display: inline-block; }   /* status pill ("Sincronizado") */
+.autosave-pill.on{ color: var(--success); }
+.autosave-pill.saving{ color: var(--accent-dark); }
+.backup-desc{ font-size: 12.5px; color: var(--ink-lighter); margin-bottom: 16px; line-height: 1.5; }   /* grey helper text under card titles */
+.categoria-dot{ width: 14px; height: 14px; border-radius: 5px; flex-shrink: 0; }   /* colored square of a category */
+
+/* Bar with a title on the left and actions on the right (current month, stock title...) */
+.mes-bar{ display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 22px; margin-bottom: 18px; box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 10px; }
+.mes-label{ font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-lighter); font-weight: 700; }
+.mes-nome{ font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+.mes-actions{ display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* Generic list rows (latest guides, waiting list preview) */
+.list-item{ display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); transition: all .2s; cursor: pointer; }
+.list-item:last-child{ border-bottom: none; }
+.list-item:hover{ padding-left: 4px; }
+.mini-avatar{ width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 11px; letter-spacing: -0.02em; overflow: hidden; }
+.mini-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+.list-info{ flex: 1; min-width: 0; }
+.list-name{ font-size: 12.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-sub{ font-size: 10.5px; color: var(--ink-lighter); font-weight: 500; }
+.list-time{ font-size: 10.5px; color: var(--ink-lighter); font-weight: 600; white-space: nowrap; }
+
+/* ----- Modals (dialogs): app.js adds .active to show one ----- */
+.modal-overlay{ display: none; position: fixed; inset: 0; background: rgba(26, 22, 32, 0.55); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.active{ display: flex; }
+.modal-box{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-box h3{ font-size: 17px; font-weight: 800; color: var(--accent-dark); letter-spacing: -0.02em; margin-bottom: 6px; }
+.modal-box .modal-sub{ font-size: 12px; color: var(--ink-lighter); margin-bottom: 16px; font-weight: 500; }
+.modal-box textarea{ width: 100%; min-height: 120px; padding: 14px; border: 1.5px solid var(--border-strong); border-radius: 14px; font-size: 13.5px; background: var(--surface-soft); color: var(--ink); resize: vertical; margin-bottom: 16px; }
+.modal-actions{ display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.modal-actions button{ padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+.btn-cancelar{ background: var(--surface-soft); color: var(--ink); border: 1.5px solid var(--border) !important; }
+.btn-salvar{ background: var(--grad-accent); color: white; box-shadow: 0 8px 16px -8px rgba(176, 136, 148, 0.5); }
+
+/* Profile modal: round photo preview + upload/remove buttons */
+.perfil-modal-foto-area{ display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.perfil-modal-foto{ width: 72px; height: 72px; border-radius: 20px; background: var(--grad-accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
+.perfil-modal-foto img{ width: 100%; height: 100%; object-fit: cover; }
+.perfil-foto-botoes{ display: flex; flex-direction: column; gap: 8px; }
+
+/* ----- Accordions (Settings). Built on the native <details>/<summary>: no JavaScript needed ----- */
+.accordion-card{ display: block; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; box-shadow: var(--shadow-sm); overflow: hidden; }
+.accordion-header{ display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: pointer; font-weight: 600; list-style: none; user-select: none; transition: background .2s; }   /* list-style:none hides the default triangle */
+.accordion-header::-webkit-details-marker{ display: none; }   /* same, for Chrome/Safari */
+.accordion-header:hover{ background: var(--surface-muted); }
+.accordion-arrow{ display: inline-block; font-size: 10px; color: var(--accent-dark); transition: transform .3s ease; }
+details[open] .accordion-arrow{ transform: rotate(180deg); }   /* arrow flips when the section is open */
+.accordion-content{ padding: 0 24px 24px 24px; border-top: 1px solid var(--border); background: var(--surface); }
+
+
+/* ============ 6. SCREENS ============ */
+
+/* ----- Dashboard ----- */
+.dash-grid{ display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: start; }   /* main column + 340px side column */
+@media (max-width: 1200px){ .dash-grid{ grid-template-columns: 1fr; } }
+.left-col{ display: flex; flex-direction: column; gap: 18px; }
+
+/* Hero photo with overlay text and badges */
+.hero-image-card{ position: relative; width: 100%; height: 320px; border-radius: var(--radius-xl); overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 18px; }
+.hero-image-card img{ width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.hero-image-card:hover img{ transform: scale(1.03); }
+.hero-image-overlay{ position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.6) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 22px 26px; pointer-events: none; }   /* pointer-events:none lets clicks reach the photo; the buttons re-enable it */
+.hero-image-overlay .hero-edit-btn, .hero-image-overlay .hero-top-badges{ pointer-events: auto; }
+.hero-top-badges{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.hero-badge{ display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; font-size: 11.5px; font-weight: 700; padding: 7px 14px; border-radius: var(--radius-pill); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.15); }
+.hero-badge .dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }   /* blinking "live" dot */
+@keyframes pulse{ 0%, 100%{ opacity: 1; } 50%{ opacity: 0.4; } }
+.hero-badge svg{ width: 13px; height: 13px; color: #fff; }
+.hero-edit-btn{ display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 11.5px; font-weight: 700; padding: 7px 14px; border-radius: var(--radius-pill); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); cursor: pointer; transition: all .2s; }
+.hero-edit-btn:hover{ background: rgba(0,0,0,0.75); transform: translateY(-1px); }
+.hero-edit-btn svg{ width: 13px; height: 13px; }
+.hero-image-content{ color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+.hero-image-content h2{ font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+.hero-image-content p{ font-size: 13px; opacity: 0.9; font-weight: 500; }
+
+/* Chart card and summary numbers */
+.chart-wrap{ height: 200px; margin-bottom: 8px; }   /* fixed height: Chart.js needs a sized parent */
+.overview-stats{ display: flex; gap: 30px; padding-top: 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.overview-stat .num{ font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+.overview-stat .lbl{ font-size: 10.5px; color: var(--ink-lighter); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.resumo-cat-item{ display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--ink); }
+.resumo-cat-item:last-child{ border-bottom: none; }
+.resumo-cat-nome{ display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.resumo-cat-num{ font-weight: 800; letter-spacing: -0.02em; }
+
+/* ----- Guides: form on the left, month list on the right ----- */
+.layout-guias{ display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+@media (max-width: 1000px){ .layout-guias{ grid-template-columns: 1fr; } }
+.guia-item{ display: flex; align-items: flex-start; gap: 14px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; transition: all .2s; }
+.guia-item:hover{ background: var(--surface); box-shadow: var(--shadow-sm); }
+.guia-icon{ width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 12px; letter-spacing: -0.02em; }
+.guia-info{ flex: 1; min-width: 0; }
+.guia-nome{ font-size: 13.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.guia-proc{ font-size: 11.5px; color: var(--ink-lighter); margin-top: 3px; font-weight: 500; }
+.guia-data{ font-size: 11.5px; color: var(--ink-lighter); white-space: nowrap; font-weight: 600; }
+.convenio-badge{ display: inline-block; font-size: 10px; font-weight: 700; background: var(--grad-accent); color: white; padding: 2px 9px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.03em; }
+.guia-obs{ margin-top: 8px; background: rgba(232, 184, 124, 0.12); border-left: 3px solid var(--warning); padding: 6px 10px; border-radius: 8px; font-size: 12px; color: #8A6A2E; display: flex; align-items: flex-start; gap: 6px; }   /* yellow note under a guide */
+.guia-obs-icon{ font-size: 13px; flex-shrink: 0; }
+.guia-obs-texto{ flex: 1; white-space: pre-wrap; word-break: break-word; }
+.categoria-toggle{ display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }   /* category buttons in the new-guide form */
+.cat-option{ flex: 1; min-width: 80px; text-align: center; padding: 10px; border-radius: var(--radius-pill); border: 1.5px solid var(--border-strong); font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--ink-soft); background: var(--surface-soft); transition: all .2s; }
+.checklist{ display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }   /* procedure "chips" */
+.chk{ border: 1.5px solid var(--border-strong); background: var(--surface-soft); border-radius: var(--radius-pill); padding: 7px 13px; font-size: 12px; cursor: pointer; color: var(--ink-soft); user-select: none; font-weight: 600; transition: all .2s; }
+.chk:hover{ border-color: var(--accent); }
+.chk.checked{ background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ----- Waiting list ----- */
+.espera-add-btn{ width: 100%; border: 1.5px dashed var(--accent); background: var(--surface-soft); color: var(--accent-dark); font-weight: 700; font-size: 13px; padding: 13px; border-radius: var(--radius-pill); cursor: pointer; margin-bottom: 18px; transition: all .2s; }
+.espera-add-btn:hover{ background: var(--surface); }
+.espera-form{ display: none; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 10px; margin-bottom: 20px; align-items: end; }
+.espera-form.open{ display: grid; }
+@media (max-width: 1100px){ .espera-form.open{ grid-template-columns: 1fr 1fr; } }
+.espera-table-head{ display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 60px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-lighter); padding: 8px 16px; font-weight: 700; }
+.espera-row{ display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 60px; align-items: center; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 8px; color: var(--ink); }
+@media (max-width: 900px){ .espera-table-head, .espera-row{ grid-template-columns: 1fr 1fr; } }
+
+/* ----- Implants: surgery form, stock cards, history rows ----- */
+.implante-form{ display: grid; grid-template-columns: 160px 1fr; gap: 14px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; }
+@media (max-width: 800px){ .implante-form{ grid-template-columns: 1fr; } }
+.implante-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }   /* as many 220px+ cards as fit per row */
+.implante-card{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; transition: all .2s; }
+.implante-card:hover{ transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.implante-card img{ width: 100%; height: 140px; object-fit: cover; background: var(--surface-muted); }
+.implante-card-body{ padding: 12px; }
+.implante-card-nome{ font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.implante-card-sub{ font-size: 11.5px; color: var(--ink-lighter); margin-bottom: 8px; }
+.implante-card-qtd{ display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.qtd-btn{ width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface-soft); cursor: pointer; font-weight: 800; color: var(--accent-dark); }   /* round − and + buttons */
+.qtd-btn:hover{ background: var(--accent); color: white; border-color: var(--accent); }
+.implante-card-actions{ display: flex; gap: 6px; margin-top: 10px; }
+.implante-pac-item{ display: flex; align-items: center; gap: 12px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 8px; }
+/* Restocking / purchase history rows (built by app.js) */
+.ix-title{ margin-bottom: 12px; }
+.ix-row{ display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.ix-title + .ix-row{ border-top: 0; }
+.ix-sub{ font-size: 12px; color: var(--ink-lighter); font-weight: 500; }
+.ix-badge{ display: inline-block; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; }
+.ix-warn{ background: rgba(232, 184, 124, 0.2); color: #C98A3B; }   /* low stock */
+.ix-bad{ background: rgba(217, 134, 134, 0.2); color: var(--danger); }   /* out of stock */
+
+/* ----- Pix screen (form + preview) ----- */
+.pix-layout{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 1000px){ .pix-layout{ grid-template-columns: 1fr; } }
+.pix-preview-placeholder{ color: var(--ink-lighter); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.pix-preview-placeholder svg{ width: 64px; height: 64px; }
+
+/* ----- Messages ----- */
+.msg-layout{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1000px){ .msg-layout{ grid-template-columns: 1fr; } }
+.msg-template-item{ display: flex; align-items: flex-start; gap: 12px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; transition: all .2s; }
+.msg-template-item:hover{ background: var(--surface); box-shadow: var(--shadow-sm); }
+.msg-template-icon{ width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; }   /* WhatsApp green */
+.msg-template-icon svg{ width: 18px; height: 18px; }
+.msg-template-info{ flex: 1; min-width: 0; }
+.msg-template-nome{ font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; letter-spacing: -0.01em; }
+.msg-template-texto{ font-size: 12px; color: var(--ink-soft); line-height: 1.45; white-space: pre-wrap; word-break: break-word; max-height: 80px; overflow: hidden; }
+.paciente-item{ display: flex; align-items: center; gap: 12px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 8px; transition: all .2s; }
+.paciente-item:hover{ background: var(--surface); box-shadow: var(--shadow-sm); }
+.paciente-avatar{ width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--grad-accent); color: white; font-weight: 800; font-size: 12px; }
+.paciente-info{ flex: 1; min-width: 0; }
+.paciente-nome{ font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.paciente-tel{ font-size: 11.5px; color: var(--ink-lighter); font-weight: 500; }
+.paciente-actions{ display: flex; gap: 6px; }
+.msg-send-panel{ background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 18px; }
+.msg-send-panel .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+/* ----- Settings ----- */
+.config-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }   /* two columns of accordions */
+@media (max-width: 1000px){ .config-grid{ grid-template-columns: 1fr; } }
+.categoria-card{ background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; }
+.categoria-card-head{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.categoria-nome-tag{ display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 13.5px; color: var(--ink); letter-spacing: -0.01em; }
+.categoria-remover{ background: none; border: none; color: var(--danger); font-size: 11.5px; font-weight: 700; cursor: pointer; }
+.proc-list-item{ display: flex; justify-content: space-between; align-items: center; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; font-size: 13px; color: var(--ink); gap: 6px; }
+.proc-add-row{ display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.proc-add-row input{ margin-bottom: 0; }
+.proc-add-row button{ width: auto; padding: 0 18px; border-radius: var(--radius-pill); }
+.imprimir-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }   /* two-column forms (print screen, dentist data) */
+@media (max-width: 700px){ .imprimir-grid{ grid-template-columns: 1fr; } }
+.upload-hero-preview{ width: 100%; height: 160px; border-radius: var(--radius-md); background-size: cover; background-position: center; background-color: var(--surface-soft); border: 1px dashed var(--border-strong); margin-bottom: 14px; display: flex; align-items: center; justify-content: center; color: var(--ink-lighter); font-size: 12px; font-weight: 600; }
+
+/* The printable PASBC sheet lives in guia.css; this is only the grey frame around its preview */
+#folha-impressao{ background: #eee; padding: 20px 0; border-radius: var(--radius-md); }
+
+
+/* ============ 7. PIX PLAQUE AND MODAL ============ */
+/* Full-screen dark backdrop that holds the plaque */
+.pix-modal-overlay{ display: none; position: fixed; inset: 0; background: rgba(26, 22, 32, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 2000; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; animation: fadeIn .25s ease; }
+.pix-modal-overlay.active{ display: flex; }
+@keyframes fadeIn{ from{ opacity: 0; } to{ opacity: 1; } }
+@keyframes slideUp{ from{ opacity: 0; transform: translateY(20px) scale(0.98); } to{ opacity: 1; transform: translateY(0) scale(1); } }
+.pix-modal-container{ display: flex; flex-direction: column; align-items: center; gap: 18px; max-height: 95vh; animation: slideUp .3s var(--ease); }
+.pix-modal-actions{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.pix-modal-actions button{ display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 100px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: all .2s; }
+.pix-modal-actions .btn-print{ background: linear-gradient(135deg, #B08894 0%, #8E6A78 100%); color: white; box-shadow: 0 8px 20px -8px rgba(176, 136, 148, 0.6); }
+.pix-modal-actions .btn-print:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+.pix-modal-actions .btn-close{ background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+.pix-modal-actions .btn-close:hover{ background: rgba(255,255,255,0.25); }
+
+/* The plaque itself: A4-proportioned card (1000 x 1414). It keeps its light colors in dark mode on purpose, because it gets printed */
+#pix-modal-arte-wrap{ width: min(520px, 92vw, calc((95vh - 90px) * 1000 / 1414)); }   /* always fits the screen height */
+.pix-arte{ position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 1000 / 1414; overflow: hidden; border-radius: 20px; background: linear-gradient(160deg, #FDF3EE 0%, #FBF1EC 40%, #FAEDE7 100%); box-shadow: 0 30px 60px -25px rgba(122, 31, 61, 0.35); font-family: var(--font); }
+
+
+/* ============ 8. DARK-THEME OVERRIDES ============
+   Most colors switch automatically through the variables in section 1.
+   Only fixed colors that need a different value in dark mode are listed here. */
+:root.dark .hero-badge, :root.dark .hero-edit-btn{ background: rgba(0, 0, 0, 0.7); color: #F0E6EC; }
+:root.dark .tag.convenio{ background: rgba(143, 187, 163, 0.2); color: #A8D4BC; }
+:root.dark .tag.particular{ background: rgba(232, 184, 124, 0.2); color: #E8B87C; }
+:root.dark .guia-obs{ color: #E8B87C; }
+:root.dark .autosave-pill{ background: var(--surface-muted); color: var(--ink-soft); }
+
+
+/* ============ 9. ACCESSIBILITY ============ */
+/* Visible ring when navigating with the keyboard (mouse clicks don't show it) */
+:where(button, summary, a, [role="button"]):focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+.accordion-header:focus-visible{ outline-offset: -3px; }   /* inside the card, otherwise overflow:hidden would cut it */
+
+/* People who ask their system for less motion get (almost) no animations */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .hero-image-card:hover img{ transform: none; }
+}
+
+
+/* ============ 10. PRINTING ============
+   The only thing printed from this page is the Pix plaque (the PASBC sheet prints from its own
+   hidden iframe, see guia.js). Everything is hidden except the plaque, which fills an A4 page. */
+@media print{
+  @page{ margin: 0; size: A4 portrait; }
+
+  body *{ visibility: hidden; }                                     /* hide everything... */
+  #pix-modal-arte-wrap, #pix-modal-arte-wrap *{ visibility: visible; }   /* ...except the plaque */
+  .app, .pix-modal-actions{ display: none !important; }             /* the whole panel and the modal buttons take no space */
+
+  body{ background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  .pix-modal-overlay{ position: static !important; display: block !important; background: transparent !important; backdrop-filter: none !important; padding: 0 !important; }
+  #pix-modal-arte-wrap{ position: absolute; left: 0; top: 0; width: 100% !important; display: flex !important; justify-content: center !important; margin: 0 !important; padding: 0 !important; }
+  .pix-arte{ width: 100% !important; max-width: 100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }   /* keep the background colors on paper */
+}
